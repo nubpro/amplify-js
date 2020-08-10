@@ -934,6 +934,12 @@ async function clear() {
 	sync = undefined;
 }
 
+async function getOutboxMutations() {
+	await start();
+
+	return storage.runExclusive(s => sync.outbox.getMutations(s));
+}
+
 function getNamespace(): SchemaNamespace {
 	const namespace: SchemaNamespace = {
 		name: DATASTORE,
@@ -986,6 +992,7 @@ class DataStore {
 	observe = observe;
 	configure = configure;
 	clear = clear;
+	getOutboxMutations = getOutboxMutations;
 }
 
 const instance = new DataStore();

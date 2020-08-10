@@ -127,6 +127,16 @@ class MutationEventOutbox {
 
 		return result;
 	}
+
+	public async getMutations(storage: StorageFacade): Promise<any> {
+		const mutationEvents = await storage.query(this.MutationEvent);
+
+		const result = [];
+
+		mutationEvents.forEach(model => result.push(model));
+
+		return result;
+	}
 }
 
 export { MutationEventOutbox };
