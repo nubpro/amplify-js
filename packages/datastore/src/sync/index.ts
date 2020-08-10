@@ -88,7 +88,7 @@ export class SyncEngine {
 	private readonly subscriptionsProcessor: SubscriptionProcessor;
 	private readonly mutationsProcessor: MutationProcessor;
 	private readonly modelMerger: ModelMerger;
-	private readonly outbox: MutationEventOutbox;
+	public readonly outbox: MutationEventOutbox;
 
 	constructor(
 		private readonly schema: InternalSchema,
