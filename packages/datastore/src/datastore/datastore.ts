@@ -400,6 +400,18 @@ const save = async <T extends PersistentModel>(
 	return savedModel;
 };
 
+const mergeModel = async (
+	modelConstructor: PersistentModelConstructor<any>,
+	item
+): Promise<any> => {
+	await start();
+
+	const modelDefinition = getModelDefinition(modelConstructor);
+	const model = modelInstanceCreator(modelConstructor, item);
+
+	return storage.runExclusive(s => sync.modelMerger.merge(s, model));
+};
+
 const remove: {
 	<T extends PersistentModel>(
 		model: T,
@@ -986,6 +998,7 @@ class DataStore {
 	observe = observe;
 	configure = configure;
 	clear = clear;
+	mergeModel = mergeModel;
 }
 
 const instance = new DataStore();

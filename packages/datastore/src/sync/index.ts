@@ -87,7 +87,7 @@ export class SyncEngine {
 	private readonly syncQueriesProcessor: SyncProcessor;
 	private readonly subscriptionsProcessor: SubscriptionProcessor;
 	private readonly mutationsProcessor: MutationProcessor;
-	private readonly modelMerger: ModelMerger;
+	public readonly modelMerger: ModelMerger;
 	private readonly outbox: MutationEventOutbox;
 
 	constructor(
@@ -163,123 +163,123 @@ export class SyncEngine {
 							});
 
 							//#region GraphQL Subscriptions
-							const [
-								ctlSubsObservable,
-								dataSubsObservable,
-							] = this.subscriptionsProcessor.start();
+							// const [
+							// 	ctlSubsObservable,
+							// 	dataSubsObservable,
+							// ] = this.subscriptionsProcessor.start();
 
-							try {
-								subscriptions.push(
-									await this.waitForSubscriptionsReady(
-										ctlSubsObservable,
-										datastoreConnectivity
-									)
-								);
-							} catch (err) {
-								observer.error(err);
-								return;
-							}
+							// try {
+							// 	subscriptions.push(
+							// 		await this.waitForSubscriptionsReady(
+							// 			ctlSubsObservable,
+							// 			datastoreConnectivity
+							// 		)
+							// 	);
+							// } catch (err) {
+							// 	observer.error(err);
+							// 	return;
+							// }
 
-							logger.log('Realtime ready');
+							// logger.log('Realtime ready');
 
-							observer.next({
-								type: ControlMessage.SYNC_ENGINE_SUBSCRIPTIONS_ESTABLISHED,
-							});
+							// observer.next({
+							// 	type: ControlMessage.SYNC_ENGINE_SUBSCRIPTIONS_ESTABLISHED,
+							// });
 
 							//#endregion
 
 							//#region Base & Sync queries
-							try {
-								await new Promise((resolve, reject) => {
-									const syncQuerySubscription = this.syncQueriesObservable().subscribe(
-										{
-											next: message => {
-												const { type } = message;
+							// try {
+							// 	await new Promise((resolve, reject) => {
+							// 		const syncQuerySubscription = this.syncQueriesObservable().subscribe(
+							// 			{
+							// 				next: message => {
+							// 					const { type } = message;
 
-												if (
-													type === ControlMessage.SYNC_ENGINE_SYNC_QUERIES_READY
-												) {
-													resolve();
-												}
+							// 					if (
+							// 						type === ControlMessage.SYNC_ENGINE_SYNC_QUERIES_READY
+							// 					) {
+							// 						resolve();
+							// 					}
 
-												observer.next(message);
-											},
-											complete: () => {
-												resolve();
-											},
-											error: error => {
-												reject(error);
-											},
-										}
-									);
+							// 					observer.next(message);
+							// 				},
+							// 				complete: () => {
+							// 					resolve();
+							// 				},
+							// 				error: error => {
+							// 					reject(error);
+							// 				},
+							// 			}
+							// 		);
 
-									if (syncQuerySubscription) {
-										subscriptions.push(syncQuerySubscription);
-									}
-								});
-							} catch (error) {
-								observer.error(error);
-								return;
-							}
+							// 		if (syncQuerySubscription) {
+							// 			subscriptions.push(syncQuerySubscription);
+							// 		}
+							// 	});
+							// } catch (error) {
+							// 	observer.error(error);
+							// 	return;
+							// }
 							//#endregion
 
 							//#region process mutations
-							subscriptions.push(
-								this.mutationsProcessor
-									.start()
-									.subscribe(({ modelDefinition, model: item, hasMore }) => {
-										const modelConstructor = this.userModelClasses[
-											modelDefinition.name
-										] as PersistentModelConstructor<any>;
+							// subscriptions.push(
+							// 	this.mutationsProcessor
+							// 		.start()
+							// 		.subscribe(({ modelDefinition, model: item, hasMore }) => {
+							// 			const modelConstructor = this.userModelClasses[
+							// 				modelDefinition.name
+							// 			] as PersistentModelConstructor<any>;
 
-										const model = this.modelInstanceCreator(
-											modelConstructor,
-											item
-										);
+							// 			const model = this.modelInstanceCreator(
+							// 				modelConstructor,
+							// 				item
+							// 			);
 
-										this.storage.runExclusive(storage =>
-											this.modelMerger.merge(storage, model)
-										);
+							// 			this.storage.runExclusive(storage =>
+							// 				this.modelMerger.merge(storage, model)
+							// 			);
 
-										observer.next({
-											type:
-												ControlMessage.SYNC_ENGINE_OUTBOX_MUTATION_PROCESSED,
-											data: {
-												model: modelConstructor,
-												element: model,
-											},
-										});
+							// 			observer.next({
+							// 				type:
+							// 					ControlMessage.SYNC_ENGINE_OUTBOX_MUTATION_PROCESSED,
+							// 				data: {
+							// 					model: modelConstructor,
+							// 					element: model,
+							// 				},
+							// 			});
 
-										observer.next({
-											type: ControlMessage.SYNC_ENGINE_OUTBOX_STATUS,
-											data: {
-												isEmpty: !hasMore,
-											},
-										});
-									})
-							);
+							// 			observer.next({
+							// 				type: ControlMessage.SYNC_ENGINE_OUTBOX_STATUS,
+							// 				data: {
+							// 					isEmpty: !hasMore,
+							// 				},
+							// 			});
+							// 		})
+							// );
 							//#endregion
 
 							//#region Merge subscriptions buffer
 							// TODO: extract to function
-							subscriptions.push(
-								dataSubsObservable.subscribe(
-									([_transformerMutationType, modelDefinition, item]) => {
-										const modelConstructor = this.userModelClasses[
-											modelDefinition.name
-										] as PersistentModelConstructor<any>;
+							// subscriptions.push(
+							// 	dataSubsObservable.subscribe(
+							// 		([_transformerMutationType, modelDefinition, item]) => {
+							// 			const modelConstructor = this.userModelClasses[
+							// 				modelDefinition.name
+							// 			] as PersistentModelConstructor<any>;
 
-										const model = this.modelInstanceCreator(
-											modelConstructor,
-											item
-										);
+							// 			const model = this.modelInstanceCreator(
+							// 				modelConstructor,
+							// 				item
+							// 			);
 
-										this.storage.runExclusive(storage =>
-											this.modelMerger.merge(storage, model)
-										);
-									}
-								)
-							);
+							// 			this.storage.runExclusive(storage =>
+							// 				this.modelMerger.merge(storage, model)
+							// 			);
+							// 		}
+							// 	)
+							// );
 							//#endregion
 						} else if (!online) {
 							this.online = online;
