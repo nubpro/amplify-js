@@ -221,7 +221,11 @@ class MutationProcessor {
 					} catch (err) {
 						if (err.errors && err.errors.length > 0) {
 							const [error] = err.errors;
-							if (error.message === 'Network Error') {
+
+							if (
+								error.message === 'Network Error' ||
+								error.message === 'timeout of 0ms exceeded'
+							) {
 								if (!this.processing) {
 									throw new NonRetryableError('Offline');
 								}
@@ -310,7 +314,7 @@ class MutationProcessor {
 											: null,
 									});
 								} catch (err) {
-									logger.warn("failed to execute errorHandler", err);
+									logger.warn('failed to execute errorHandler', err);
 								} finally {
 									// Return empty tuple, dequeues the mutation
 									return error.data
