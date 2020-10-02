@@ -934,10 +934,16 @@ async function clear() {
 	sync = undefined;
 }
 
-async function getOutboxMutations() {
+async function getMutationsInOutbox() {
 	await start();
 
 	return storage.runExclusive(s => sync.outbox.getMutations(s));
+}
+
+async function getModelIdsInOutbox() {
+	await start();
+
+	return storage.runExclusive(s => sync.outbox.getModelIds(s));
 }
 
 function getNamespace(): SchemaNamespace {
@@ -992,7 +998,8 @@ class DataStore {
 	observe = observe;
 	configure = configure;
 	clear = clear;
-	getOutboxMutations = getOutboxMutations;
+	getMutationsInOutbox = getMutationsInOutbox;
+	getModelIdsInOutbox = getModelIdsInOutbox;
 }
 
 const instance = new DataStore();
